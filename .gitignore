@@ -1,5 +1,8 @@
 .venv/
-.env
+venv/
 __pycache__/
 *.pyc
-.vscode/
+.env
+.DS_Store
+backend/uploaded_files/
+vector_db/

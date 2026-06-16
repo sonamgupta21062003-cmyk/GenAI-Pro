@@ -1,0 +1,23 @@
+FROM python:3.12-slim
+
+WORKDIR /app
+
+# Copy dependency requirements
+COPY requirements.txt .
+
+# FIXED: Read requirements dynamically with universal line ending support and skip pywin32
+RUN python -c "import os; \
+    content = open('requirements.txt', 'rb').read(); \
+    text = content.decode('utf-16', errors='ignore') if b'\xff\xfe' in content or b'\xfe\xff' in content else content.decode('utf-8', errors='ignore'); \
+    filtered = [line.strip() for line in text.splitlines() if line.strip() and 'pywin32' not in line]; \
+    open('requirements_linux.txt', 'w', encoding='utf-8').write('\n'.join(filtered))" && \
+    pip install --no-cache-dir -r requirements_linux.txt
+
+# Copy the backend source code
+COPY backend/ ./backend
+
+# Expose FastAPI's default port
+EXPOSE 8000
+
+# Run the Uvicorn application server
+CMD ["uvicorn", "backend.app:app", "--host", "0.0.0.0", "--port", "8000"]
