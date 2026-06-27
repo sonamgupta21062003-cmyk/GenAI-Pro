@@ -234,9 +234,7 @@ http://localhost:8000/docs
 
 ## 📸 Screenshots
 
-(Add screenshots after deployment)
 
----
 
 ## 📈 Skills Demonstrated
 
