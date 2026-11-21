@@ -1,30 +1,44 @@
+
 from fastapi import APIRouter, HTTPException, UploadFile, File, Form
 from backend.services.rag_service import run_rag_pipeline
+from pathlib import Path
 import os
 import shutil
+import uuid
 
 router = APIRouter(prefix="/chat", tags=["Chat"])
 
+UPLOAD_DIR = Path("backend/data/uploads")
+
+
 @router.post("")
 async def chat_endpoint(
-    question: str = Form(...), 
+    question: str = Form(...),
     file: UploadFile = File(...)
 ):
-    # 1. Ensure the upload directory exists
-    upload_dir = "backend/data/uploads"
-    os.makedirs(upload_dir, exist_ok=True)
-    
-    # 2. Define the path where the file will be saved locally
-    file_path = os.path.join(upload_dir, file.filename)
-    
+    if not file.filename or Path(file.filename).suffix.lower() != ".pdf":
+        raise HTTPException(
+            status_code=400,
+            detail="Only PDF files are allowed."
+        )
+
+    UPLOAD_DIR.mkdir(parents=True, exist_ok=True)
+
+    file_path = UPLOAD_DIR / f"{uuid.uuid4().hex}.pdf"
+
     try:
-        # 3. Save the uploaded file to disk securely
-        with open(file_path, "wb") as buffer:
+        with file_path.open("wb") as buffer:
             shutil.copyfileobj(file.file, buffer)
-            
-        # 4. Pass the temporary path and question into your RAG pipeline
-        answer = run_rag_pipeline(file_path, question)
+
+        answer = run_rag_pipeline(str(file_path), question)
+
         return {"response": answer}
-        
+
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(
+            status_code=500,
+            detail=f"RAG processing failed: {str(e)}"
+        )
+
+    finally:
+        await file.close()

@@ -16,3 +16,5 @@ app.include_router(chat_router)
 @app.get("/")
 def home():
     return {"message": "RAG Chatbot API is running 🚀"}
+
+# for opening backend http://localhost:8000
