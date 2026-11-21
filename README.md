@@ -116,6 +116,7 @@ GENAI-PRO
 * Streamlit
 
 ### Deployment
+https://genai-pro-47jz4pwzzdc92djv8sf2xv.streamlit.app/
 
 * Docker
 * Docker Compose
